@@ -24,10 +24,10 @@ jobs:
         
     - name: Run CMake configure
       run: |
-        cd "${{ runner.workspace }}/build"
-        cmake ..
+        cd "${{ github.workspace }}"  # Use github.workspace instead of runner.workspace
+        cmake .
         
     - name: Build project
       run: |
-        cd "${{ runner.workspace }}/build"
-        make
+        cd "${{ github.workspace }}"
+        cmake --build . --target all -- -j $(nproc)
