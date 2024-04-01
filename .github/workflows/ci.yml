@@ -8,14 +8,26 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: configure
-      run: mkdir build && cd build && ls ..
-    - name: run cmake
-      run: cmake ../
-    - name: make binary
-      run: make
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      
+    - name: Create build directory
+      run: |
+        if [ -d "${{ runner.workspace }}/build" ]; then
+          rm -rf "${{ runner.workspace }}/build"
+        fi
+        mkdir -p "${{ runner.workspace }}/build"
+        ls -la "${{ runner.workspace }}"
+        
+    - name: Run CMake configure
+      run: |
+        cd "${{ runner.workspace }}/build"
+        cmake ..
+        
+    - name: Build project
+      run: |
+        cd "${{ runner.workspace }}/build"
+        make
