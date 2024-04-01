@@ -16,6 +16,6 @@ jobs:
     - name: configure
       run: mkdir build && cd build && ls ..
     - name: run cmake
-      run: cmake ..
+      run: cmake ../
     - name: make binary
       run: make
