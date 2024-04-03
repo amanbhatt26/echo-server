@@ -13,9 +13,11 @@ int main(){
         if(fork() == 0){
             close(sockfd);
             while(true){
+                bzero(buf, 1024);
                 ReadLine(connfd, buf, sizeof(buf));
                 fputs(buf, stdout);
                 Writen(connfd,buf,strlen(buf));
+
             }
         }
         close(connfd);
