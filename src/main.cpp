@@ -7,8 +7,11 @@ int main(){
 
     char buf[1024] = "Hello\0";
     int sockfd = ListeningSocket();
-    
+    RegisterSigChldHandler();
+    RegisterSigPipeHandler();   
+
     int connfd;
+
     while(connfd = Accept(sockfd)){
         if(fork() == 0){
             close(sockfd);

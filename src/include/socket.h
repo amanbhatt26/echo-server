@@ -5,6 +5,9 @@
 #include <netinet/in.h>
 #include <netinet/ip.h> 
 #include <unistd.h>
+#include <arpa/inet.h>
+#include <signal.h>
+#include <sys/wait.h>
 
 int SocketIPV4(){
     again:
@@ -15,6 +18,38 @@ int SocketIPV4(){
             goto again;
         }
         perror("Socket creation Failed");
+        exit(1);
+    }
+
+    return sockfd;
+
+}
+
+int ClientSocket(const char *ipaddress){
+
+    int sockfd = SocketIPV4();
+
+    struct sockaddr_in servAddr = {};
+    servAddr.sin_family = AF_INET;
+    struct in_addr s_addr;
+    int aconvert;
+    if((aconvert = inet_pton(AF_INET, ipaddress, &s_addr) ) <= 0){
+        if(aconvert == 0){
+            fputs("Invalid IP address\n", stdout);
+            
+        }
+        else{
+            perror("Cannot Convert IP address");
+            
+        }
+        exit(1);
+    }
+
+    servAddr.sin_addr = s_addr;
+    servAddr.sin_port = htons(8080);
+    
+    if(connect(sockfd, (struct sockaddr *)&servAddr, sizeof(servAddr)) < 0){
+        perror("Cannot Connect socket");
         exit(1);
     }
 
@@ -76,7 +111,8 @@ void Writen(int fd, const char* buf, int n){
 
         if(nWritten == 0){
 
-            fputs("Socket is closed\n", stdout);
+            perror("Socket is closed");
+            // fputs("Socket is closed\n", stdout);
             exit(1);
         }
 
@@ -105,7 +141,8 @@ void Readn(int fd, char *buf, int n){
         }
 
         if(nRead == 0){
-            fputs("Socket is closed\n", stdout);
+            perror("Socket is closed");
+            // fputs("Socket is closed\n", stdout);
             exit(1);
         }
 
@@ -132,7 +169,8 @@ void ReadLine(int fd, char *buf, int n){
         }
 
         if(nRead == 0){
-            fputs("Socket is closed", stdout);
+            perror("Socket is closed");
+            // fputs("Socket is closed\n", stdout);
             exit(1);
         }
 
@@ -147,4 +185,33 @@ void ReadLine(int fd, char *buf, int n){
     *ptr++ = '\n';
     *ptr = '\0';
 
+}
+
+void sig_chld(int signo){
+
+    pid_t pid;
+    int stat;
+
+    while(waitpid(-1,&stat,WNOHANG) > 0);
+
+    return;
+
+}
+
+void RegisterSigChldHandler(){
+    struct sigaction sga = {};
+    sga.sa_handler = &sig_chld;
+    sga.sa_flags = 0;
+    // sigemptyset(&sga.sa_mask);
+
+    sigaction(SIGCHLD, &sga, NULL);
+
+}
+
+void RegisterSigPipeHandler(){
+    struct sigaction sga = {};
+    sga.sa_handler = SIG_IGN;
+    sga.sa_flags = 0;
+
+    sigaction(SIGPIPE, &sga, NULL);
 }
